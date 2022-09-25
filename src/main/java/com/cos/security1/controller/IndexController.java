@@ -5,6 +5,8 @@ import com.cos.security1.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +31,7 @@ public class IndexController {
     }
 
     @GetMapping("/admin")
-    public@ResponseBody String admin() {
+    public @ResponseBody String admin() {
         return "admin";
     }
 
@@ -38,8 +40,8 @@ public class IndexController {
         return "manager";
     }
 
-    // 시큐리티가 해당 주소를 낚아챈다.
-    // SecurityConfig 파일 생성 후 낚아채지 않는다.
+    // Spring Security 를 사용하기 때문에 @PostMapping "/login" API 를 따로 만들지 않아도 된다.
+    // 로그인을 위한 Form API 만 작성.
     @GetMapping("/loginForm")
     public String loginForm() {
         return "loginForm";
@@ -64,5 +66,27 @@ public class IndexController {
         userRepository.save(saveUser);
 
         return "redirect:/loginForm";
+    }
+
+    /*
+        글로벌 Security 설정으로 권한에 따른 주소를 통제하지 않고, 간단하게 몇 개의 API 주소 호출을 권한에 따라 통제할 때는
+        아래처럼 @Secured, @PreAuthorize 를 사용한다.
+    * */
+
+    // SecurityConfig 설정 클래스의 @EnableGlobalMethodSecurity 에 의해 @Secured 를 활성화
+    // 아래처럼 간단하게 권한에 따른 주소 통제가 가능하다.
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/info")
+    public @ResponseBody String info() {
+        return "개인정보";
+    }
+
+    // SecurityConfig 설정 클래스의 @EnableGlobalMethodSecurity 에 의해 @PreAuthorize, @PostAuthorize 를 활성화
+    // @Secured 과 다르게 has~Role 문법을 사용해 여러 권한을 부여해 주소 통제가 가능하다.
+    // @Pre~ 는 메소드 실행 전, @Post~ (잘 안씀) 는 메소드 실행 후 실행된다.
+    @PreAuthorize("hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @GetMapping("/data")
+    public @ResponseBody String data() {
+        return "데이터 정보";
     }
 }

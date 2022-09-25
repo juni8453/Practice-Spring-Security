@@ -2,6 +2,7 @@ package com.cos.security1.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -9,6 +10,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity // 스프링 시큐리티 필터(SecurityConfig) 가 스프링 필터체인에 등록이 된다.
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true) // secured 어노테이션 활성화, preAuthorize 어노테이션 활성화
 public class SecurityConfig {
 
     @Bean
@@ -29,12 +31,18 @@ public class SecurityConfig {
             .anyRequest().permitAll()
 
             // 4. 권한이 없는 페이지 접속 후 login 페이지로 이동하기 위해선 ?
-            .and().formLogin().loginPage("/loginForm");
+            .and().formLogin().loginPage("/loginForm")
+
+            // 5. /login 주소가 호출이 되면, 시큐리티가 낚아채서 대신 로그인을 진행해준다.
+            //  즉, controller 에 /login 을 만들지 않아도 된다.
+            //  로그인이 완료되면 / 홈페이지로 이동하도록 설정
+            .loginProcessingUrl("/login")
+            .defaultSuccessUrl("/");
 
         return httpSecurity.build();
     }
 
-    // 패스워드 암호화를 위한 빈 등록
+    // 회원가입 시 패스워드 암호화를 위한 빈 등록
     // return new BCryptPasswordEncoder 이므로 해당 클래스를 IoC로 자동등록
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
