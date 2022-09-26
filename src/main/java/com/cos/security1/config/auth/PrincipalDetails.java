@@ -1,4 +1,4 @@
-package com.cos.security1.config.oauth;
+package com.cos.security1.config.auth;
 
 // 시큐리티가 /login 주소 요청을 낚아채서 로그인을 진행시킨다.
 // 로그인 진행이 완료가 되면 시큐리티 자신만의 session 을 만들어준다. (Key : Security ContextHolder)
