@@ -9,21 +9,35 @@ package com.cos.security1.config.auth;
 // User 정보에 들어갈 수 있는 객체는 UserDetails Type !
 // Security Session -> Authentication -> UserDetails(PrincipalDetails)
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import com.cos.security1.model.User;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
+@Getter
 @RequiredArgsConstructor
-public class PrincipalDetails implements UserDetails {
+public class PrincipalDetails implements UserDetails, OAuth2User {
 
     private final User user;
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return null;
+    }
 
     // 1. 유저의 권한을 리턴하는 메소드
     // 현재 User 의 권한은 String Type 이므로 List<GrantedAuthority> Type 으로 바꿔서 리턴해주면 된다.
