@@ -68,8 +68,15 @@ public class IndexController {
         return "index";
     }
 
+    // 일반 로그인, OAuth 로그인 모두 분기할 필요없이 시큐리티 세션에서 저장된 User 객체를 가져올 수 있게된다.
+    // 또한 @AuthenticationPrincipal 을 사용해 다운캐스팅할 필요없이 User 객체에 접근이 가능하다.
+    // 원래 Principal ~ Service 객체를 만들지 않아도 알아서 로그인을 해주는데 굳이 만들어준 이유는 return PrincipalDetails 을 위해서 !
+    // PrincipalOauth2UserService 는 묶는 이유 + OAuth2 에서 제공하는 데이터를 이용해 회원가입을 하기 위해서 !
+    // 이렇게 통합된 return 을 통해 분기가 필요없어지는 것이다.
     @GetMapping("/user")
-    public @ResponseBody String user() {
+    public @ResponseBody
+    String user(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+        System.out.println("principalDetails : " + principalDetails.getUser());
         return "user";
     }
 
