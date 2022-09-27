@@ -1,6 +1,9 @@
 package com.cos.security1.config.oauth;
 
 import com.cos.security1.config.auth.PrincipalDetails;
+import com.cos.security1.config.oauth.provider.FacebookUserInfo;
+import com.cos.security1.config.oauth.provider.GoogleUserInfo;
+import com.cos.security1.config.oauth.provider.OAuth2UserInfo;
 import com.cos.security1.model.User;
 import com.cos.security1.repository.UserRepository;
 
@@ -12,7 +15,6 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-
 
 @RequiredArgsConstructor
 @Service
@@ -48,28 +50,51 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
         // 즉, loadUser() 메소드의 역할은 OAuth 로부터 회원 프로필을 받아올 수 있는 역할을 담당한다.
         System.out.println("getAttributes : " + oAuth2User.getAttributes());
 
-        String provider = userRequest.getClientRegistration().getClientId();
-        String providerId = oAuth2User.getAttribute("sub");
-        String username = provider + "_" + providerId; // 중복방지
-        String email = oAuth2User.getAttribute("email");
+        OAuth2UserInfo oauth2UserInfo = null;
+        User user = null;
+
+        if (userRequest.getClientRegistration().getRegistrationId().equals("google")) {
+            System.out.println("구글 로그인 요청");
+            oauth2UserInfo = new GoogleUserInfo(oAuth2User.getAttributes());
+
+        } else if (userRequest.getClientRegistration().getRegistrationId().equals("facebook")) {
+            System.out.println("페이스북 로그인 요청");
+            oauth2UserInfo = new FacebookUserInfo(oAuth2User.getAttributes());
+        }
+
+        if (oauth2UserInfo != null) {
+            String provider = oauth2UserInfo.getProvider();
+            String providerId = oauth2UserInfo.getProviderId();
+            String username = provider + "_" + providerId;
+
+            User findUser = userRepository.findByUsername(username);
+            if (findUser == null) {
+                user = saveUserInfo(oauth2UserInfo, provider, providerId, username);
+                userRepository.save(user);
+            } else {
+                try {
+                    throw new Exception("이미 존재하는 유저입니다.");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return new PrincipalDetails(user, oAuth2User.getAttributes());
+    }
+
+    private User saveUserInfo(OAuth2UserInfo oauth2UserInfo, String provider, String providerId, String username) {
+        String email = oauth2UserInfo.getEmail();
         String password = bCryptPasswordEncoder.encode("password"); // 별 의미없는 패스워드
         String role = "ROLE_USER";
 
-        User findUser = userRepository.findByUsername(username);
-
-        if (findUser == null) {
-            findUser = User.builder()
-                .username(username)
-                .password(password)
-                .email(email)
-                .role(role)
-                .provider(provider)
-                .providerId(providerId)
-                .build();
-
-            userRepository.save(findUser);
-        }
-
-        return new PrincipalDetails(findUser, oAuth2User.getAttributes());
+        return User.builder()
+            .username(username)
+            .password(password)
+            .email(email)
+            .role(role)
+            .provider(provider)
+            .providerId(providerId)
+            .build();
     }
 }
