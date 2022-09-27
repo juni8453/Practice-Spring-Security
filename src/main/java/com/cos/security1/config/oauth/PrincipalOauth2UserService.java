@@ -1,10 +1,7 @@
 package com.cos.security1.config.oauth;
 
 import com.cos.security1.config.auth.PrincipalDetails;
-import com.cos.security1.config.oauth.provider.FacebookUserInfo;
-import com.cos.security1.config.oauth.provider.GoogleUserInfo;
-import com.cos.security1.config.oauth.provider.NaverUserInfo;
-import com.cos.security1.config.oauth.provider.OAuth2UserInfo;
+import com.cos.security1.config.oauth.provider.*;
 import com.cos.security1.model.User;
 import com.cos.security1.repository.UserRepository;
 
@@ -74,7 +71,19 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
             // 네이버로부터 Object 형이 확실하게 들어오기 때문에 Unchecked cast warning 무시하도록 어노테이션 설정
             @SuppressWarnings(value = "unchecked")
             Map<String, Object> response = (Map<String, Object>) oAuth2User.getAttributes().get("response");
+
             oauth2UserInfo = new NaverUserInfo(response);
+
+        } else if (userRequest.getClientRegistration().getRegistrationId().equals("kakao")) {
+            System.out.println("카카오 로그인 요청");
+
+            @SuppressWarnings(value = "unchecked")
+            Map<String, Object> kakaoAccount = (Map<String, Object>) oAuth2User.getAttributes().get("kakao_account");
+
+            @SuppressWarnings(value = "unchecked")
+            Map<String, Object> profile = (Map<String, Object>) oAuth2User.getAttributes().get("profile");
+
+            oauth2UserInfo = new KakaoUserInfo(kakaoAccount, profile, oAuth2User.getAttributes());
         }
 
         if (oauth2UserInfo != null) {
