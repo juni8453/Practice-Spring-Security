@@ -34,6 +34,8 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
 
         -> 이 정보를 토대로 회원가입 진행할 예정
     * */
+
+    // 함수 종료 시 @AuthenticationPrincipal 어노테이션이 만들어진다.
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         // registrationId 로 어떤 OAuth 로 로그인 했는지 확인가능 (google)

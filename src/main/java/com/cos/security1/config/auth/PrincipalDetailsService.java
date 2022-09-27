@@ -28,6 +28,8 @@ public class PrincipalDetailsService implements UserDetailsService {
     // 리턴된 값은 Authentication(내부 UserDetails) 에 들어가게 된다.
     // 이후 시큐리티 Session(내부 Authentication(내부 UserDetails)) 로 들어가게 된다.
     // 즉, loadUserByUsername() 메소드가 실행되면서 시큐리티 Session 내부가 셋팅되게 된다.
+
+    // 함수 종료 시 @AuthenticationPrincipal 어노테이션이 만들어진다.
     @Override
     public UserDetails loadUserByUsername(String username) {
         User user = userRepository.findByUsername(username);
