@@ -10,7 +10,6 @@ package com.cos.security1.config.auth;
 // Security Session -> Authentication -> UserDetails(PrincipalDetails)
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import com.cos.security1.model.User;
 
@@ -24,19 +23,20 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-@RequiredArgsConstructor
 public class PrincipalDetails implements UserDetails, OAuth2User {
 
     private final User user;
+    private Map<String, Object> attributes;
 
-    @Override
-    public Map<String, Object> getAttributes() {
-        return null;
+    // 일반 로그인 시 loadUserByUsername() 메소드에서 사용
+    public PrincipalDetails(User user) {
+        this.user = user;
     }
 
-    @Override
-    public String getName() {
-        return null;
+    // OAuth 로그인 시 loadUser() 메소드에서 사용
+    public PrincipalDetails(User user, Map<String, Object> attributes) {
+        this.user = user;
+        this.attributes = attributes;
     }
 
     // 1. 유저의 권한을 리턴하는 메소드
@@ -90,5 +90,17 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
         */
 
         return true;
+    }
+
+    // 8. sub, name, given_name, family_name, picture, email, email_verified, locale 등 구글에서 제공하는 정보가 키,맵 형식으로 들어간다.
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    // 별로 중요하지 않으므로 return null
+    @Override
+    public String getName() {
+        return null;
     }
 }
